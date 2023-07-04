@@ -3,14 +3,17 @@
 
 use core::panic::PanicInfo;
 
-/// This function is called on panic.
-/// This is a diverging function, which does not return
+// This function is called on panic.
+// This is a diverging function, which does not return
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
 
-#[no_mangle]
+#[no_mangle] // don't mangle the name of this function
 pub extern "C" fn _start() -> ! {
+    // this function is the entry point, since the linker looks for a function
+    // named `_start` by default
     loop {}
 }
+
