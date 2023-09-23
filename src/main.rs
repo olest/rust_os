@@ -1,6 +1,10 @@
 #![no_std]
 #![no_main]
 
+// https://doc.rust-lang.org/unstable-book/language-features/custom-test-frameworks.html
+#![feature(custom_test_frameworks)]
+#![test_runner(crate::test_runner)]
+
 mod vga_buffer;
 
 use core::panic::PanicInfo;
@@ -10,6 +14,15 @@ use core::panic::PanicInfo;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
+}
+
+// 
+#[cfg(test)]
+fn test_runner(tests: &[&dyn Fn()]) {
+    //println!("Running {} tests", tests.len());
+    for test in tests {
+        test();
+    }
 }
 
 //static HELLO: &[u8] = b"Hello World!";

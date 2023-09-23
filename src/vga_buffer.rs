@@ -3,6 +3,8 @@
 use volatile::Volatile;
 // formatting 
 use core::fmt;
+// lazily initializes itself when accessed for the first time.
+use lazy_static::lazy_static;
 
 // disable warnings about unused code
 #[allow(dead_code)]
@@ -130,11 +132,13 @@ impl fmt::Write for Writer {
 
 // global writer that can be used as an interface from other modules without 
 // carrying a Writer instance around
-pub static WRITER: Writer = Writer {
-    column_position: 0,
-    color_code: ColorCode::new(Color::Yellow, Color::Black),
-    buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-};
+lazy_static! {
+    pub static WRITER: Writer = Writer {
+        column_position: 0,
+        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    };
+}
 
 
 pub fn print_something() {
@@ -149,4 +153,4 @@ pub fn print_something() {
     writer.write_byte(b'H');
     writer.write_string("ello! ");
     write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
-
+}
