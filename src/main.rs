@@ -12,7 +12,8 @@ use core::panic::PanicInfo;
 // This function is called on panic.
 // This is a diverging function, which does not return
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
 
@@ -30,7 +31,7 @@ fn test_runner(tests: &[&dyn Fn()]) {
 #[no_mangle] // don't mangle the name of this function
 pub extern "C" fn _start() -> ! {
 
-    vga_buffer::print_something();
+    //vga_buffer::print_something();
 
     //let vga_buffer = 0xb8000 as *mut u8;
 
@@ -42,6 +43,13 @@ pub extern "C" fn _start() -> ! {
     //    }
     //}
 
+    //use core::fmt::Write;
+    //vga_buffer::WRITER.lock().write_str("Hello again").unwrap();
+    //write!(vga_buffer::WRITER.lock(), ", some numbers: {} {}", 42, 1.337).unwrap();
+
+
+    println!("Hello World{}", "!");
+    panic!("Some panic message");
     loop {}
 }
 

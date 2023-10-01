@@ -5,6 +5,8 @@ use volatile::Volatile;
 use core::fmt;
 // lazily initializes itself when accessed for the first time.
 use lazy_static::lazy_static;
+// spinlock
+use spin::Mutex;
 
 // disable warnings about unused code
 #[allow(dead_code)]
@@ -133,24 +135,41 @@ impl fmt::Write for Writer {
 // global writer that can be used as an interface from other modules without 
 // carrying a Writer instance around
 lazy_static! {
-    pub static WRITER: Writer = Writer {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
+    });
 }
 
 
-pub fn print_something() {
+//pub fn print_something() {
+//
+//    use core::fmt::Write;
+//    let mut writer = Writer {
+//        column_position: 0,
+//        color_code: ColorCode::new(Color::Yellow, Color::Black),
+//        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+//    };
 
+//  writer.write_byte(b'H');
+//    writer.write_string("ello! ");
+//   write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+//}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    let mut writer = Writer {
-        column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
-
-    writer.write_byte(b'H');
-    writer.write_string("ello! ");
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+    WRITER.lock().write_fmt(args).unwrap();
 }
